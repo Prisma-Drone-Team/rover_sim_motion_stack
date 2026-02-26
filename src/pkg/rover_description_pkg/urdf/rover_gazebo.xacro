@@ -129,7 +129,7 @@
 
 
     <joint name="camera_to_payload" type="fixed">
-        <origin xyz="0.1 0.0 0.04" rpy="0 0 0"/>
+        <origin xyz="0.15 0.0 0.04" rpy="0 0 0"/>
         <parent link="payload_link"/>
         <child link="${camera_base_frame}"/>
     </joint>
@@ -211,14 +211,15 @@
 			<visualize>0</visualize>
 			<topic>rover/depth/image_raw</topic>
             <ignition_frame_id>rover/camera_depth_optical_frame</ignition_frame_id>
+            <gz_frame_id>rover/camera_depth_optical_frame</gz_frame_id>
 			<pose>0 0.0 0.0 0 -0 0</pose>
 			<camera name="d435">
                 <point_cloud_topic>rover/depth/image_raw/points</point_cloud_topic>
                 <camera_info_topic>rover/depth/camera_info</camera_info_topic>
 				<horizontal_fov>1.48702</horizontal_fov>
 				<image>
-					<width>1280</width>
-					<height>720</height>
+					<width>640</width>
+					<height>480</height>
 				</image>
 				<clip>
 					<near>0.1</near>

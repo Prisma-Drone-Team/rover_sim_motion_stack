@@ -97,7 +97,9 @@ def generate_launch_description():
             # "-world", "leonardo_race",
             "-topic", "/rover/robot_description",
             "-name", "prisma_rover",
-            # "-allow_renaming", "true",
+            # "-allow_renaming", "true",2.20 7.78
+            "-x", "0.20",
+            "-y", "5.78",
             "-z", "0.15",
         ]
     )

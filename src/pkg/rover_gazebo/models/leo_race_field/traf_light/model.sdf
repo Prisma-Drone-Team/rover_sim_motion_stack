@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sdf version='1.9'>
+  <model name='traf_light'>
+    <static>true</static>
+    <pose>0 0 0.0 0 0 0</pose>
+    <link name='base'>
+      <!-- Box nero come base -->
+      <visual name='box_visual'>
+        <geometry>
+          <box>
+            <size>0.3 0.8 0.3</size>
+          </box>
+        </geometry>
+        <material>
+          <ambient>0 0 0 1</ambient>
+          <diffuse>0 0 0 1</diffuse>
+          <specular>0.1 0.1 0.1 1</specular>
+        </material>
+      </visual>
+
+      <!-- Piano con texture ArUco sulla faccia superiore -->
+      <visual name='texture_neg_y'>
+        <pose>0 0 0.151 0 0 0</pose>
+        <geometry>
+          <plane>
+            <normal>0 0 1</normal>
+            <size>0.3 0.8</size>
+          </plane>
+        </geometry>
+        <material>
+          <diffuse>1 1 1 1</diffuse>
+          <specular>0.4 0.4 0.4 1</specular>
+          <pbr>
+            <metal>
+              <albedo_map>model://leo_race_field/traf_light/traf_light.png</albedo_map>
+            </metal>
+          </pbr>
+        </material>
+      </visual>
+
+      <visual name='texture_pos_y'>
+        <pose>0 0 -0.151 3.14159 0 3.14159</pose>
+        <geometry>
+          <plane>
+            <normal>0 0 1</normal>
+            <size>0.3 0.8</size>
+          </plane>
+        </geometry>
+        <material>
+          <diffuse>1 1 1 1</diffuse>
+          <specular>0.4 0.4 0.4 1</specular>
+          <pbr>
+            <metal>
+              <albedo_map>model://leo_race_field/traf_light/traf_light.png</albedo_map>
+            </metal>
+          </pbr>
+        </material>
+      </visual>
+
+      <visual name='texture_pos_x'>
+        <pose>0.151 0 0 0 1.5708 0</pose>
+        <geometry>
+          <plane>
+            <normal>0 0 1</normal>
+            <size>0.3 0.8</size>
+          </plane>
+        </geometry>
+        <material>
+          <diffuse>1 1 1 1</diffuse>
+          <specular>0.4 0.4 0.4 1</specular>
+          <pbr>
+            <metal>
+              <albedo_map>model://leo_race_field/traf_light/traf_light.png</albedo_map>
+            </metal>
+          </pbr>
+        </material>
+      </visual>
+
+      <visual name='texture_neg_x'>
+        <pose>-0.151 0 0 0 -1.5708 0</pose>
+        <geometry>
+          <plane>
+            <normal>0 0 1</normal>
+            <size>0.3 0.8</size>
+          </plane>
+        </geometry>
+        <material>
+          <diffuse>1 1 1 1</diffuse>
+          <specular>0.4 0.4 0.4 1</specular>
+          <pbr>
+            <metal>
+              <albedo_map>model://leo_race_field/traf_light/traf_light.png</albedo_map>
+            </metal>
+          </pbr>
+        </material>
+      </visual>
+
+      <!-- Collision geometry -->
+      <collision name='box_collision'>
+        <geometry>
+          <box>
+            <size>0.3 0.3 0.5</size>
+          </box>
+        </geometry>
+      </collision>
+    </link>
+  </model>
+</sdf>

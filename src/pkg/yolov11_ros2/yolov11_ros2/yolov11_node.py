@@ -48,7 +48,7 @@ class Yolov11Node(Node):
         self.declare_parameter("depth_threshold", 8.0)
         self.depth_threshold = self.get_parameter("depth_threshold").get_parameter_value().double_value
         
-        self.declare_parameter("threshold", 0.6)
+        self.declare_parameter("threshold", 0.75)
         self.threshold = self.get_parameter("threshold").get_parameter_value().double_value
         
         self.declare_parameter("enable_yolo", True)
@@ -97,7 +97,7 @@ class Yolov11Node(Node):
         self.pred_compressed_msg = CompressedImage()  # Aggiungi questa linea
         
         # Set clipping distance for background removal
-        depth_scale = 0.001
+        depth_scale = 1.0 #0.001
         self.depth_threshold = self.depth_threshold/depth_scale
         
         
@@ -153,8 +153,9 @@ class Yolov11Node(Node):
 
             # Convert depth image msg
             cv_depth_image = self.cv_bridge.imgmsg_to_cv2(depth_img_msg, desired_encoding='passthrough')
-            np_depth_image = np.array(cv_depth_image, dtype=np.uint16)
-
+            # np_depth_image = np.array(cv_depth_image, dtype=np.uint16)
+            # Sostituisci NaN e inf
+            np_depth_image = np.nan_to_num(cv_depth_image, nan=0.0, posinf=0.0, neginf=0.0)
             # bg removal
             grey_color = 153
             depth_image_3d = np.dstack((np_depth_image, np_depth_image, np_depth_image)) # depth image is 1 channel, color is 3 channels
@@ -260,8 +261,18 @@ class Yolov11Node(Node):
 
 
                     ### Get the pointcloud for the i'th object
-                    depth_raw = o3d.geometry.Image(single_object_depth.astype(np.uint16))
-                    object_pointcloud = o3d.geometry.PointCloud.create_from_depth_image(depth_raw, self.camera_intrinsics)
+                    # depth_raw = o3d.geometry.Image(single_object_depth.astype(np.uint16))
+                    # object_pointcloud = o3d.geometry.PointCloud.create_from_depth_image(depth_raw, self.camera_intrinsics)
+                    # Assicurati single_object_depth è in metri (float)
+                    depth_raw = o3d.geometry.Image(single_object_depth.astype(np.float32))
+                    # Specifica depth_scale=1.0 perché i valori sono già in metri
+                    object_pointcloud = o3d.geometry.PointCloud.create_from_depth_image(
+                        depth_raw,
+                        self.camera_intrinsics,
+                        depth_scale=1.0,
+                        depth_trunc=10.0,
+                        stride=1
+)
 
 
                     ## Reduce precision of pointcloud to improve performance
@@ -365,7 +376,7 @@ class Yolov11Node(Node):
             if u < 0 or v < 0 or u >= depth_image.shape[1] or v >= depth_image.shape[0]:
                 continue
 
-            depth = depth_image[v, u] / 1000.0  # mm -> m
+            depth = depth_image[v, u] #/ 1000.0  # mm -> m
             if depth == 0 or np.isnan(depth):
                 self.get_logger().warn(f"No valid depth for {label}")
                 continue
