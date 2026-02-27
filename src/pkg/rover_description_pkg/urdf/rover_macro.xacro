@@ -122,7 +122,9 @@
             <visual>
                 <origin xyz="0 0 0" rpy="-1.57 0.0 3.1415"/>
                 <geometry>
-                    <mesh filename="file://$(find rover_description_pkg)/meshes/rplidar_s2.dae"/>
+                    <!-- TEMP: Cylinder instead of mesh for Docker container compatibility -->
+                    <cylinder radius="0.04" length="0.15"/>
+                    <!-- <mesh filename="file://$(find rover_description_pkg)/meshes/rplidar_s2.dae"/> -->
                 </geometry>
             </visual>
 

@@ -5,7 +5,8 @@ from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription, SetEnvironmentVariable
 from launch.launch_description_sources import PythonLaunchDescriptionSource
-from launch.substitutions import Command, LaunchConfiguration, PathJoinSubstitution
+from launch.substitutions import Command, LaunchConfiguration, PathJoinSubstitution, PythonExpression
+from launch.conditions import IfCondition, UnlessCondition
 from launch_ros.actions import Node
 from launch_ros.parameter_descriptions import ParameterValue
 
@@ -17,11 +18,26 @@ def generate_launch_description():
         value='garden'
     )
     
+    # AGGIUNGE PATH PER LE MESH DEL ROVER
+    set_gz_resource_path = SetEnvironmentVariable(
+        name='GZ_SIM_RESOURCE_PATH',
+        value=os.path.join(get_package_share_directory('rover_description_pkg'), '') + ':' + 
+              os.path.join(get_package_share_directory('rover_gazebo'), 'models') + ':' +
+              os.environ.get('GZ_SIM_RESOURCE_PATH', '')
+    )
+    
+    # STABILIZZA COMUNICAZIONE TRANSPORT
+    set_gz_transport = SetEnvironmentVariable(
+        name='GZ_DISCOVERY_TIMEOUT',
+        value='5000'
+    )
+    
     # Create the launch configuration variables
     use_sim_time = LaunchConfiguration('use_sim_time')
     urdf = os.path.join(get_package_share_directory(
         'rover_description_pkg'), 'urdf', 'rover.xacro')
     world = LaunchConfiguration('world')
+    headless = LaunchConfiguration('headless')
     frame_prefix = LaunchConfiguration("frame_prefix")
     tf_prefix = LaunchConfiguration("tf_prefix")
     namespace = LaunchConfiguration("namespace")   
@@ -76,15 +92,27 @@ def generate_launch_description():
         default_value=['leonardo_race.sdf', ' -r'],
         description='World file to use in Gazebo')
     
+    declare_headless_cmd = DeclareLaunchArgument(
+        'headless',
+        default_value='true',
+        description='Launch Gazebo without GUI (headless mode)')
+    
     gz_world_arg = PathJoinSubstitution([
         get_package_share_directory('rover_gazebo'), 'worlds', world])
 
     # Include the gz sim launch file  
     gz_sim_share = get_package_share_directory("ros_gz_sim")
+    
+    # Costruisci gli argomenti per gazebo (headless quando richiesto)
+    from launch.substitutions import PythonExpression
+    gz_args_headless = PythonExpression([
+        "'", gz_world_arg, " -s' if '", headless, "' == 'true' else '", gz_world_arg, "'"
+    ])
+    
     gz_sim = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(os.path.join(gz_sim_share, "launch", "gz_sim.launch.py")),
         launch_arguments={
-            "gz_args" : gz_world_arg 
+            "gz_args" : gz_args_headless
         }.items()
     )
     
@@ -94,14 +122,15 @@ def generate_launch_description():
         executable="create",
         name='urdf_spawner_2',
         arguments=[
-            # "-world", "leonardo_race",
+            "-world", "leonardo_race",
             "-topic", "/rover/robot_description",
             "-name", "prisma_rover",
-            # "-allow_renaming", "true",2.20 7.78
+            # "-allow_renaming", "true",
             "-x", "0.20",
             "-y", "5.78",
             "-z", "0.15",
-        ]
+        ],
+        parameters=[{'use_sim_time': use_sim_time}]
     )
     
     gz_ros2_bridge = Node(
@@ -109,9 +138,9 @@ def generate_launch_description():
         executable="parameter_bridge",
         arguments=[
             "/rover/cmd_vel@geometry_msgs/msg/Twist@gz.msgs.Twist",
-            "/clock@rosgraph_msgs/msg/Clock[gz.msgs.Clock",
+            # "/clock@rosgraph_msgs/msg/Clock[gz.msgs.Clock",
             "/odom/wheels@nav_msgs/msg/Odometry@gz.msgs.Odometry",
-            "/tf@tf2_msgs/msg/TFMessage[gz.msgs.Pose_V",
+            # "/tf@tf2_msgs/msg/TFMessage[gz.msgs.Pose_V",
             # '/rover/joint_states@sensor_msgs/msg/JointState[gz.msgs.Model',
             '/scan@sensor_msgs/msg/LaserScan@gz.msgs.LaserScan',
             '/imu/data@sensor_msgs/msg/Imu@gz.msgs.IMU',
@@ -122,6 +151,7 @@ def generate_launch_description():
             '/rover/depth/image_raw/points@sensor_msgs/msg/PointCloud2@gz.msgs.PointCloudPacked',
         ],
         parameters=[{
+            'use_sim_time': use_sim_time,
             'qos_overrides./scan.publisher.reliability': 'best_effort',
             'qos_overrides./scan.subscription.reliability': 'best_effort',
         }]
@@ -142,6 +172,7 @@ def generate_launch_description():
             package="joint_state_publisher",
             executable="joint_state_publisher",
             namespace=namespace,
+            parameters=[{'use_sim_time': use_sim_time}]
         )
 
     image_compressed_republisher = Node(
@@ -152,23 +183,25 @@ def generate_launch_description():
             "--ros-args",
             "-r", "in:=/rover/color/image_raw",
             "-r", "out:=/rover/color/image_raw/compressed",
-        ]
+        ],
+        parameters=[{'use_sim_time': use_sim_time}]
     )    
 
     # Create the launch description and populate
     ld = LaunchDescription(declared_arguments)
 
-    # AGGIUNGI PER PRIMO IL SET DELLA VERSIONE
+    # AGGIUNGI PER PRIMO IL SET DELLA VERSIONE E RISORSE
     ld.add_action(set_gz_version)
+    ld.add_action(set_gz_resource_path)
     
     # Declare the launch options
     ld.add_action(declare_use_sim_time_cmd)
     ld.add_action(declare_world_cmd)
+    ld.add_action(declare_headless_cmd)
 
     # Launch Gazebo
     ld.add_action(gz_sim)
     ld.add_action(gz_spawn_entity)
-    ld.add_action(gz_ros2_bridge)
 
     #Republisher image per yolo
     ld.add_action(image_compressed_republisher)
@@ -176,5 +209,7 @@ def generate_launch_description():
     # Launch Robot State Publisher
     ld.add_action(start_robot_state_publisher_cmd)
     ld.add_action(start_joint_state_publisher_cmd)
+
+    ld.add_action(gz_ros2_bridge)
 
     return ld

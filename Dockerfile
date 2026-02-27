@@ -82,7 +82,7 @@ RUN pip3 install "numpy<2.0"
 RUN apt-get update
 RUN apt-get install gz-garden -y
 RUN apt-get install ros-humble-ros-gz -y
-ENV IGN_GAZEBO_RESOURCE_PATH=/home/user/ros2_ws/install/rover_gazebo/share/rover_gazebo/models
+ENV IGN_GAZEBO_RESOURCE_PATH=/home/user/rover_ws/install/rover_gazebo/share/rover_gazebo/models
 
 #Environment variables
 ENV DEBIAN_FRONTEND=noninteractive
@@ -110,11 +110,11 @@ RUN sudo adduser user plugdev
 USER user
 
 #ROS2 workspace creation and compilation
-RUN mkdir -p ${HOME}/ros2_ws/src
-WORKDIR ${HOME}/ros2_ws
-COPY --chown=user ./src ${HOME}/ros2_ws/src
+RUN mkdir -p ${HOME}/rover_ws/src
+WORKDIR ${HOME}/rover_ws
+COPY --chown=user ./src ${HOME}/rover_ws/src
 SHELL ["/bin/bash", "-c"] 
-WORKDIR ${HOME}/ros2_ws/src/git
+WORKDIR ${HOME}/rover_ws/src/git
 
 ## Clone the required repositories first
 #RUN git clone -b humble --single-branch https://github.com/ros-perception/vision_opencv.git
@@ -125,12 +125,12 @@ RUN git clone -b humble-devel --single-branch https://github.com/rst-tu-dortmund
 
 
 # Return to the workspace root
-WORKDIR ${HOME}/ros2_ws
+WORKDIR ${HOME}/rover_ws
 
 RUN source /opt/ros/${ROS_DISTRO}/setup.bash; rosdep update; rosdep install -i --from-path src --rosdistro humble -y; colcon build --symlink-install
 
 RUN echo "source /opt/ros/${ROS_DISTRO}/setup.bash;" >>  ${HOME}/.bashrc
-RUN echo "source ${HOME}/ros2_ws/install/local_setup.bash;" >>  ${HOME}/.bashrc
+RUN echo "source ${HOME}/rover_ws/install/local_setup.bash;" >>  ${HOME}/.bashrc
 
 
 

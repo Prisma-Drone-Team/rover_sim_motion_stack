@@ -13,12 +13,12 @@ pip install ultralytics
 Install [colcon](https://docs.ros.org/en/humble/Tutorials/Colcon-Tutorial.html#install-colcon) and [rosdep](https://docs.ros.org/en/crystal/Installation/Linux-Install-Binary.html#installing-and-initializing-rosdep), then build this repository:
 
 ```shell
-mkdir -p ~/ros2_ws/src && cd ~/ros2_ws/src
+mkdir -p ~/rover_ws/src && cd ~/rover_ws/src
 git clone https://github.com/andreasHovaldt/yolov8_ros2.git
-cd ~/ros2_ws
+cd ~/rover_ws
 rosdep install --from-paths src --ignore-src -r -y
 colcon build --symlink-install
-source ~/ros2_ws/install/setup.bash
+source ~/rover_ws/install/setup.bash
 ```
 
 ## Run code
