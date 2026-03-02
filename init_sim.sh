@@ -11,7 +11,7 @@ WHITE='\033[1;37m'
 NC='\033[0m' # No Color
 
 echo -e "${CYAN}======================================================${NC}"
-echo -e "${GREEN}   🚁 H-CoRE Drone Simulation Container Init${NC}" 
+echo -e "${GREEN}   🚗 H-CoRE UGV Simulation Container Init${NC}" 
 echo -e "${CYAN}======================================================${NC}" 
 
 # Setup ROS2 environment
