@@ -192,6 +192,12 @@
       <pose>8.0 0.1 0.45 1.57 0.0 -1.57</pose>
       <uri>model://leo_race_field/traf_light</uri>
     </include>
+
+    <include>
+      <name>qrcode_34</name>
+      <pose>2.77 -0.5 1.0 1.57 0.0 -1.57</pose>
+      <uri>model://leo_race_field/qrcode_34</uri>
+    </include>
     
   </model>
 </sdf>
